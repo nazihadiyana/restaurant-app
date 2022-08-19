@@ -1,0 +1,150 @@
+import React, { useEffect, useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../css/styles.css";
+import request from "../../helpers/requests";
+import { decodeToken } from "react-jwt";
+import ReactPaginate from "react-paginate";
+
+function Items({ currentItems }) {
+  if (!currentItems)
+    return (
+      <>
+        <h3>Loading</h3>
+      </>
+    );
+
+  return (
+    <div className="items row row-cols-auto">
+      {currentItems &&
+        currentItems.map((item) => (
+          <div className="col-6 col-lg-3 w-100">
+            <h3>{item.food_name}</h3>
+            <span>{item.food_price}</span>
+          </div>
+        ))}
+    </div>
+  );
+}
+
+function PaginatedItems({ itemsPerPage, listFood }) {
+  const [currentItems, setCurrentItems] = useState(null);
+  const [pageCount, setPageCount] = useState(0);
+  const [itemOffset, setItemOffset] = useState(0);
+
+  useEffect(() => {
+    // Fetch items from another resources.
+    const endOffset = itemOffset + itemsPerPage;
+    console.log(`Loading items from ${itemOffset} to ${endOffset}`);
+    setCurrentItems(listFood.slice(itemOffset, endOffset));
+    setPageCount(Math.ceil(listFood.length / itemsPerPage));
+  }, [itemOffset, itemsPerPage]);
+
+  // Invoke when user click to request another page.
+  const handlePageClick = (event) => {
+    const newOffset = (event.selected * itemsPerPage) % listFood.length;
+    console.log(
+      `User requested page number ${event.selected}, which is offset ${newOffset}`
+    );
+    setItemOffset(newOffset);
+  };
+
+  return (
+    <>
+      <div className="d-flex flex-column align-items-center gap-4">
+        <Items currentItems={currentItems} />
+        <ReactPaginate
+          nextLabel="next >"
+          onPageChange={handlePageClick}
+          pageRangeDisplayed={3}
+          marginPagesDisplayed={2}
+          pageCount={pageCount}
+          previousLabel="< previous"
+          pageClassName="page-item"
+          pageLinkClassName="page-link"
+          previousClassName="page-item"
+          previousLinkClassName="page-link"
+          nextClassName="page-item"
+          nextLinkClassName="page-link"
+          breakLabel="..."
+          breakClassName="page-item"
+          breakLinkClassName="page-link"
+          containerClassName="pagination"
+          activeClassName="active"
+          renderOnZeroPageCount={null}
+        />
+      </div>
+    </>
+  );
+}
+
+const ListMenu = () => {
+  const isStorage = sessionStorage.getItem("token");
+  const dataStore = decodeToken(isStorage);
+  const [listFood, setListFood] = useState([]);
+
+  // async function handleAdd(item) {
+  //   const { menuname, price } = item;
+  //   const urlpath = window.location.pathname;
+
+  //   await request
+  //     .post("/order/add/", {
+  //       user_name: dataStore.user_name,
+  //       food_name: food_name,
+  //       food_price: food_price,
+  //       quantity: 1,
+  //     })
+  //     .then(() => fetchData())
+  //     .catch((err) => console.log(err));
+  //   if (urlpath !== "/menu") {
+  //     // alert(`${menuname} has been added to Order List`);
+  //     // window.location.reload();
+  //   } else {
+  //     alert(`${menuname} has been added to Order List`);
+  //   }
+  // }
+
+  // const handleAdd = (item) => {
+  //   loading.push({ ...item, quantity: 1 });
+  //   // let result = [...loading, { ...item, quantity: 1 }];
+  //   localStorage.setItem("order", JSON.stringify(loading));
+  // };
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (JSON.parse(window.localStorage.getItem("order")) === null) {
+  //       setLoading([]);
+  //     } else {
+  //       setLoading(JSON.parse(window.localStorage.getItem("order")));
+  //     }
+  //   }, 1000);
+  //   return () => clearInterval(interval);
+  // }, [loading]);
+  const fetchData = async () => {
+    await request
+      .get("/api/food")
+      .then(({ data }) => {
+        setListFood(data);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  useEffect(() => {
+    // const interval = setInterval(() => {
+    //   fetchData();
+    // }, 2000);
+    // return () => clearInterval(interval);
+    fetchData();
+  }, []);
+
+  return (
+    <>
+      <div className="container-fluid my-5">
+        <div className="container">
+          <PaginatedItems itemsPerPage={8} listFood={listFood} />
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default ListMenu;

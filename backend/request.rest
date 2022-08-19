@@ -1,0 +1,50 @@
+POST  http://localhost:5000/api/user
+Content-Type: application/json
+
+{
+    "user_name": "John Doe",
+    "user_email": "john@mail.com",
+    "user_admin":"admin",
+    "user_password": "123456",
+    "user_address": "Jakarta",
+    "user_phone":"0080800820",
+    "user_token":""
+}
+
+###
+POST  http://localhost:5000/api/user/login 
+Content-Type: application/json
+
+{
+    "user_name": "John Doe",
+    "user_password": "123456"
+}
+
+###
+POST  http://localhost:5000/api/food/add 
+Content-Type: application/json
+
+{
+    "food_name": "shrimp tacos",
+    "food_price": "Rp. 45.000",
+    "food_desc":"03 pieces per serving",
+    "food_src":"taco/taco-2.png"
+}
+
+
+###
+GET http://localhost:5000/api/food
+
+###
+POST  http://localhost:5000/api/order/add 
+Content-Type: application/json
+
+{
+    "user_id": 1,
+    "food_id": 2,
+    "quantity": 2,
+    "total_price": 90000,
+    "status": true
+}
+
+
